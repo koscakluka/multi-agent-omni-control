@@ -2,3 +2,4 @@ pathfinding_msgs/State startState
 pathfinding_msgs/State goalState
 ---
 pathfinding_msgs/Path path
+string error
