@@ -1,96 +1,54 @@
 #include <vector>
 #include <queue>
+#include <unordered_map>
 #include <map>
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include <memory>
 
 #include "ros/ros.h"
 
 using std::vector;
 using std::priority_queue;
 using std::make_pair;
+using std::pair;
 
 struct State
 {
-private:
-    int x,y;
-    float theta;
-    
-public:
-    State();
-    State(int, int, float);
-    int getX() const;
-    int getY() const;
-    float getTheta() const;
-
+  virtual ~State(){};
+  virtual void print() const {ROS_INFO("Empty state");};
+  virtual std::size_t hash(){return 0;};
+  virtual inline bool operator==(const std::shared_ptr<State> other) = 0;
+  virtual inline bool operator<(const std::shared_ptr<State> other) = 0;
 };
 
-inline bool operator==(const State& lhs, const State& rhs)
+class ProblemDefinition
 {
-    return lhs.getX() == rhs.getX()
-        && lhs.getY() == rhs.getY()
-        && lhs.getTheta() == rhs.getTheta();
-}
+protected:
+  std::shared_ptr<State> start_state_, goal_state_;
 
-inline bool operator<(const State& lhs, const State& rhs)
-{
-    if(lhs.getX() != rhs.getX())      return lhs.getX() < rhs.getX();
-    else if(lhs.getY() != rhs.getY()) return lhs.getY() < rhs.getY();
-    else                              return lhs.getTheta() < rhs.getTheta();
-}
+public:
+  virtual std::shared_ptr<State> getStartState() = 0;
+  virtual bool isGoalState(std::shared_ptr<State>) = 0; 
+  virtual vector< std::pair<std::shared_ptr<State>, float> > getSuccessors(std::shared_ptr<State>) = 0 ;
+  virtual float getHeuristicValue(std::shared_ptr<State>) = 0;
+};
 
 
 class AStar
 {            
 private:
+  vector< std::shared_ptr<State> > path;
+  ProblemDefinition* problem_;
 
-    typedef int (*HeurFnType)(State, State);
-
-    static const int DEFAULT_COST = 1;
-
-    struct Map
-    {
-        unsigned char *map;
-        int height, width;
-        
-        bool isFree(int x, int y)
-        {
-            for(int i = -5; i < 5; i++)
-            {
-                for(int j = -5; j < 5; j++) 
-                {
-                    if( x + i < 0 && x + i >= width ||  y + j < 0 || y+j >= height || map[(y+j)*width + x + i] > 10)
-                        return false;
-                }
-            }
-            return true;
-//            return x >= 0 && x < width && y >= 0 && y < height
-//                   && map[y*width + x] < 10;
-        }
-    } map;
-    State start_state;
-    State goal_state;
-    vector<State> path;
-
-    HeurFnType heurFn;    
-
-    volatile bool map_received;
-    volatile bool searching;
-    volatile bool pathFound;
-
-    State getStartState();
-    bool isGoalState(State);
-    vector<State> getSuccessors(State);
+  volatile bool searching;
+  volatile bool pathFound;
 
 public:
-    AStar(State, State);
-    ~AStar();
+  AStar(ProblemDefinition*);
+  AStar(State&, State&);
 
-    vector<State> getPath();
-
-    void setMap(int, int, unsigned char*);
-    void setHeuristic(HeurFnType);
-
-    vector<State> search();
+  vector< std::shared_ptr<State> > getPath();
+  vector< std::shared_ptr<State> > search();
 };

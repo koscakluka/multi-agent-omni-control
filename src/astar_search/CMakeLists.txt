@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(astar_search)
 
-# add_definitions(-std=c++11)
+add_definitions(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs map_server)
 
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -99,6 +99,7 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/astar_search_node.cpp)
 
 add_executable(astarSearch src/astarSearch.cpp src/aStarClass.cpp)
+#add_executable(astarSearch src/astarSearch.cpp src/aStarClass.cpp src/discrete_2D_rigid_body.cpp)
 target_link_libraries(astarSearch ${catkin_LIBRARIES})
 add_dependencies(astarSearch pathfinding_msgs_generate_messages_cpp)
 

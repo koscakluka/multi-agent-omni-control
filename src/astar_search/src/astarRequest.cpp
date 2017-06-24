@@ -39,7 +39,7 @@ int main(int argc, char **argv){
         if(pathReq.response.error.size() == 0)
         {
             nav_msgs::Path nav_path;
-            nav_path.header.frame_id = "/map";
+            nav_path.header.frame_id = "odom";
             nav_path.header.stamp = ros::Time::now();
             ROS_INFO("Path");
             for(int i = 0; i < pathReq.response.path.state.size(); i++)
