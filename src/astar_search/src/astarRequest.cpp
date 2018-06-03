@@ -56,8 +56,8 @@ int main(int argc, char **argv){
             for(int i = 0; i < 40; i++)
             {
                 path_publisher.publish(nav_path);
-                ros::spinOnce();
                 ros_loop.sleep();
+                ros::spinOnce();
             }
         }
         else
@@ -67,7 +67,7 @@ int main(int argc, char **argv){
     }
     else
     {
-        ROS_ERROR("%s", pathReq.response.error.c_str());
+        ROS_ERROR("Received no response from the search server.");
         return 1;
     }
 

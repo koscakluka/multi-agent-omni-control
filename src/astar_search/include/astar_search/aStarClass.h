@@ -1,54 +1,61 @@
 #include <vector>
+
 #include <queue>
 #include <unordered_map>
-#include <map>
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
 #include <memory>
 
-#include "ros/ros.h"
-
-using std::vector;
-using std::priority_queue;
-using std::make_pair;
-using std::pair;
+namespace state_search{ 
 
 struct State
 {
-  virtual ~State(){};
-  virtual void print() const {ROS_INFO("Empty state");};
-  virtual std::size_t hash(){return 0;};
-  virtual inline bool operator==(const std::shared_ptr<State> other) = 0;
-  virtual inline bool operator<(const std::shared_ptr<State> other) = 0;
+public:
+  virtual std::size_t hash();
+  virtual inline bool operator==(const std::shared_ptr<State> other);
 };
 
 class ProblemDefinition
 {
-protected:
-  std::shared_ptr<State> start_state_, goal_state_;
-
 public:
   virtual std::shared_ptr<State> getStartState() = 0;
   virtual bool isGoalState(std::shared_ptr<State>) = 0; 
-  virtual vector< std::pair<std::shared_ptr<State>, float> > getSuccessors(std::shared_ptr<State>) = 0 ;
+  //TODO find a way to split getSuccessorStates function header
+  virtual std::vector<
+    std::pair<std::shared_ptr<State>,
+    float>
+  > getSuccessorStates(std::shared_ptr<State>) = 0;
   virtual float getHeuristicValue(std::shared_ptr<State>) = 0;
+
+protected:
+  std::shared_ptr<State> start_state_, goal_state_;
 };
 
+namespace astar_class{
+
+using state_search::State;
+using state_search::ProblemDefinition;
 
 class AStar
 {            
+public:
+  AStar(state_search::ProblemDefinition*);
+
+  int getOpenedNodesCount();
+
+  bool isPathFound();
+
+  std::vector<std::shared_ptr<State> > getPath();
+  std::vector<std::shared_ptr<State> > search();
+
 private:
-  vector< std::shared_ptr<State> > path;
+  std::vector<std::shared_ptr<State> > path_;
   ProblemDefinition* problem_;
 
-  volatile bool searching;
-  volatile bool pathFound;
-
-public:
-  AStar(ProblemDefinition*);
-  AStar(State&, State&);
-
-  vector< std::shared_ptr<State> > getPath();
-  vector< std::shared_ptr<State> > search();
+  bool search_finished_;
+  bool path_found_;
+  int opened_nodes_counter_;
 };
+
+} } //end namespace state_search::astar_class
